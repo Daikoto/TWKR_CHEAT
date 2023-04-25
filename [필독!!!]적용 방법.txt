@@ -1,5 +1,7 @@
 ※이 패치의 버전이 현재 TWkr의 버전과 같은 버전일 경우에만 사용할것※
 
+※텍붕이 모드에서는 사용하지 말 것※
+
 현재 버전은 https://github.com/Superdimensionaldentistry/TWKR_CHEAT.git 의 README.md에 표기해놨음
 
 방법 : 여기 있는 ERB 폴더를 본체 있는 곳에 붙여넣고 덮어쓴다
