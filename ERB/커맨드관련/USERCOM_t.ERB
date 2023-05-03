@@ -11,7 +11,7 @@
 #DIM 팬티소비
 #DIM 달래고판정
 $LOOP_USERCOM
-;일반 커맨드(COMF)ㅋ
+;일반 커맨드(COMF)
 IF RESULT >= 0 && RESULT < 800
 	;데리고 나가는 판정
 	IF RESULT == 351 && !CHK_DATENOW(CFLAG:MASTER:데이트중)
@@ -229,10 +229,10 @@ ELSEIF RESULT == 811 && TALENT:MASTER:위치짐작 && AT_HOME(MASTER) && (GETBIT
 	TFLAG:206 = CFLAG:MASTER:현재위치
 	CALL HITOSAGASI()
 	INPUT
-        ;下記状態中は居場所表示だけ行い移動しない
-        IF CFLAG:우후후 || CFLAG:장난 || CFLAG:동침중
-                RETURN 1
-        ENDIF
+	;下記状態中は居場所表示だけ行い移動しない
+	IF CFLAG:우후후 || CFLAG:장난 || CFLAG:동침중
+		RETURN 1
+	ENDIF
 	IF GROUPMATCH(RESULT, 0, CFLAG:MASTER:현재위치)
 		TFLAG:Info표시중 = 0
 		RETURN 1
@@ -588,8 +588,6 @@ ELSEIF RESULT == 9999
 	FOR LOCAL,1,CHARANUM
 		PRINTFORMLC %CALLNAME:LOCAL% 현재위치：{CFLAG:LOCAL:현재위치}
 	NEXT
-ELSEIF RESULT == 900
-	CALL CHEAT(TARGET)
 ENDIF
 TFLAG:Info표시중 = 0
 RETURN 0
@@ -682,7 +680,7 @@ ENDSELECT
 
 @SOMATOMETRY(ARG)
 PRINTFORML %CALLNAME:ARG%의 신체측정을 실시했다.
-CALL MAKE_SIZE(ARG)   
+CALL MAKE_SIZE(ARG)
 CFLAG:ARG:신체측정 = 1
 CALL SHOW_SIZE(ARG)
 CALL ASK_YN("재측정한다","이걸로 좋다")
@@ -690,5 +688,4 @@ IF !RESULT
 	CFLAG:ARG:신체측정 = 2
 	RESTART
 ENDIF
-
 
