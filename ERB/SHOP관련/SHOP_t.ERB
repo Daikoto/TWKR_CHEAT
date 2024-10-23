@@ -23,7 +23,9 @@ IF (TIME:3 >= LOCAL:1 && (TIME:3 - LOCAL:1) < 240) || (TIME:3 < 240 && (1440 + T
 ENDIF
 ;---------------------
 DRAWLINE
-PRINTFORML {DAY}일째 (%GET_DAY()%) 소지금 :\\%TOSTR(MONEY,"#,###")%
+PRINTFORM {DAY}일째(
+CALL COLOR_YOUBI
+PRINTFORML )　소지금 : %금액표시(MONEY)%
 PRINTL
 
 CALL BASE_BAR(MASTER, "체력", 28, "초록")
@@ -133,11 +135,17 @@ SIF SAVESTR:본체버전 != eraTW_Version
 	SETCOLOR C_RED
 PRINTLC [500] - UPDATE
 RESETCOLOR
-PRINTLC [900] - 치트모드
+PRINTLC [900] - 치트모드							
 PRINTL
 
 SIF MONEY:2
 	PRINTFORML [600] - 카리스마 매각
+
+;record who have custon shop button
+CALL createKojoShopButtonTargetList()
+;show
+CALL showKojoShopButton()
+PRINTL
 
 DRAWLINE
 
@@ -237,9 +245,24 @@ ELSEIF RESULT == 600
 	CALL CM_BALANCE
 ;起床時間設定
 ELSEIF RESULT == 900
-	CALL CHEAT(-1)
+	CALL CHEAT(-1)					   
 ELSEIF RESULT == 2400
 	CALL 기상시간설정()
+;custom shop button use
+ELSEIF RESULT == 797
+	CALL choiceButtonTarget()
+ELSEIF RESULT == 798
+	IF ShopButtonTargetId > 0
+		ShopButtonTargetId --
+		ShopButtonTarget = ShopButtonTargetList:ShopButtonTargetId
+	ENDIF
+ELSEIF RESULT == 799
+	IF ShopButtonTargetId + 1 < ShopButtonTargetNum
+		ShopButtonTargetId ++
+		ShopButtonTarget = ShopButtonTargetList:ShopButtonTargetId
+	ENDIF
+ELSEIF INRANGE(RESULT, 800, 800 + MAX_CUSTOM_SHOP)
+	CALL useKojoShopButton(RESULT - 800)
 ENDIF
 
 
