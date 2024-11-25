@@ -25,7 +25,8 @@ ENDIF
 DRAWLINE
 PRINTFORM {DAY}일째(
 CALL COLOR_YOUBI
-PRINTFORML )　소지금 : %금액표시(MONEY)%
+PRINTFORML )　소지금:%금액표시(MONEY)%
+PRINTL
 PRINTL
 
 CALL BASE_BAR(MASTER, "체력", 28, "초록")
@@ -135,7 +136,7 @@ SIF SAVESTR:본체버전 != eraTW_Version
 	SETCOLOR C_RED
 PRINTLC [500] - UPDATE
 RESETCOLOR
-PRINTLC [900] - 치트모드							
+PRINTLC [900] - 치트모드								   
 PRINTL
 
 SIF MONEY:2
@@ -183,7 +184,16 @@ ELSEIF RESULT == 105 && FLAG:700 && !FLAG:기절중단
 	CALL SHOW_COLLECTION
 ;손에 넣은 악보
 ELSEIF RESULT == 106
+	;-KR- BGM_PATCH 대응
+	;=========== BGM_PATCH 수정지점 ===============
+	TRYCCALL IS_BGM_PATCH()
+		TRYCALL SHOW_COLLECTION_SCORE_BGMPATCH
+	CATCH
+	;=============================================
 	CALL SHOW_COLLECTION_SCORE
+	;=========== BGM_PATCH 수정지점 ===============
+	ENDCATCH
+	;=============================================
 ;받은 선물
 ELSEIF RESULT == 107
 	CALL SHOW_COLLECTION_GIFT
@@ -207,9 +217,9 @@ ELSEIF RESULT == 150 && !FLAG:기절중단
 ;농가 설정
 ELSEIF RESULT == 151 && !FLAG:기절중단
 	CALL RESTART_NOUMIN
-;아이 일람
+;子供一覧
 ELSEIF RESULT == 152 && CFLAG:MASTER:아이인원수
-	CALL SHOW_ALLCHILDLIST
+	CALL SHOW_CHILDLIST
 ;의뢰 리셋
 ELSEIF RESULT == 160 && !FLAG:기절중단
 	CALL IRAI_RESET
@@ -235,17 +245,17 @@ ELSEIF RESULT == 420
 ELSEIF RESULT == 200
 	;SAVEGAME
 	;KR판 추가수정, 저장용 커스텀 함수
-	CALL SAVEGAME_KR
+	CALL LOAD_SAVE(1)
 ;LOAD
 ELSEIF RESULT == 300
 	;LOADGAME
 	;KR판 추가수정, 로드용 커스텀 함수
-	CALL LOADGAME_KR
+	CALL LOAD_SAVE(0)
 ELSEIF RESULT == 600
 	CALL CM_BALANCE
 ;起床時間設定
 ELSEIF RESULT == 900
-	CALL CHEAT(-1)					   
+	CALL CHEAT(-1)   
 ELSEIF RESULT == 2400
 	CALL 기상시간설정()
 ;custom shop button use
@@ -336,100 +346,108 @@ PRINTDATA
 	DATAFORM 지저에서는 채소가 비싸게 팔린다.
 	DATAFORM 산정에서는 생선이 비싸게 팔린다.
 	DATAFORM 【푸짐】한 요리는 포만도가 높고,【가벼운】요리는 적다。
+	DATAFORM 욕구불만이 낮으면 만족한 상태. 체력이 다 떨어질 때까지 상대할 필요는 없다
 ENDDATA
 PRINTFORML 
 
-;虫リストを参考に
 @SHOW_ALLCHILDLIST
-#DIM CHILDNUM
-#DIM START,10
-#DIM ページ
-#DIM 最後のページ
-#DIM P調整
-#DIM L調整
-#DIM LASTNUM
-#DIM CONST MAXLINE = 20
-;各ページの頭番を設定する
-IF !START
-	P調整 = 0
-	L調整 = 0
-	LASTNUM = 0
-	FOR LOCAL, 1, CHARANUM
-		SIF !CFLAG:LOCAL:아이인원수
-			CONTINUE
-		L調整 ++
-		IF L調整 > MAXLINE
-			P調整 ++
-			START:P調整 = LOCAL
-			L調整 = 1
-		ENDIF
-		LASTNUM = LOCAL
-	NEXT
-	START = 1
-	ページ = 1
-	;最後のページと最後のページの頭番を設定
-	最後のページ = P調整 + 1
-	START:最後のページ = LASTNUM + 1
-ENDIF
+#DIM list_chara_has_child, 캐릭터수상한
+#DIM chara_has_child_num
+#DIM 対象
+#DIM printing_page
+#DIM printing_chara
+;キャラ数が増えた場合に変更する
+#DIM CONST NEXT_PAGE = 999
+#DIM CONST PREV_PAGE = 998
+#DIM CONST MAX_LINE = 20
+#DIM leave_line_count_last
 
-VARSET LOCAL
-PRINTFORML ◆아이리스트 PAGE.{ページ} 총계{CFLAG:MASTER:아이인원수}인
-DRAWLINE
-FOR LOCAL, START, START:ページ
-	SIF !CFLAG:LOCAL:아이인원수
+;消さずに残す最後の行
+;このあと CLEARLINE LINECOUNT - leave_line_count_last でこの時記録した行よりも後の行を全てCLEARする
+leave_line_count_last = LINECOUNT
+
+;子供がいるキャラのリストを作成する
+VARSET list_chara_has_child
+VARSET chara_has_child_num
+FOR 対象, 1, CHARANUM
+	SIF !CFLAG:対象:아이인원수
 		CONTINUE
-	PRINTFORM [{LOCAL, 3}] %CALLNAME:LOCAL, 16, LEFT%
-	CALL SHOW_CHILDDATA(LOCAL, "ICON")
-	LOCAL:1 ++
+	list_chara_has_child:chara_has_child_num = 対象
+	chara_has_child_num ++
 NEXT
-WHILE LOCAL:1 < MAXLINE
-	PRINTL 
-	LOCAL:1 ++
-WEND
-DRAWLINE
-PRINTL [999] 다음페이지
-PRINTL [998] 이전페이지
-PRINTL [  0] 돌아간다
-INPUT
-;戻る
-IF !RESULT
-	VARSET START
-	RETURN
-;次のページ
-ELSEIF RESULT == 999
-	ページ ++
-	IF ページ > 最後のページ
-		ページ = 1
-		START = 1
-	ELSE
-		START = START:(ページ - 1)
-	ENDIF
-;前のページ
-ELSEIF RESULT == 998
-	ページ --
-	IF ページ < 1
-		ページ = 最後のページ
-		START = START:(最後のページ - 1)
-	ELSEIF ページ == 1
-		START = 1
-	ELSE
-		START = START:(ページ - 1)
-	ENDIF
-;閲覧
-ELSEIF INRANGE(RESULT, 1, CHARANUM) && CFLAG:RESULT:아이인원수
-	PRINTFORML %"━" * 50%
-	PRINTFORML 　%CALLNAME:RESULT%의 아이 일람
-	PRINTFORML %"━" * 50%
-	PRINTFORML 
-	CALL SHOW_CHILDDATA(RESULT)
-	LOCAL:2 = RESULT
+printing_page = 1
+
+WHILE 1
+	CLEARLINE LINECOUNT - leave_line_count_last
 	DRAWLINE
-	PRINTL [  0] 돌아간다
-	INPUT
-	CLEARLINE (MAXLINE + LOCAL:2 + 4)
-ENDIF
-CLEARLINE (MAXLINE + 7)
-RESTART
+	PRINTFORML ◆子供リスト PAGE.{printing_page} 総計{CFLAG:MASTER:아이인원수}人
+	STRLENFORM {PREV_PAGE}
+	PRINTFORML %" " * (RESULT + 5)%母親キャラ%" " * 4%子供の人数・性別
+	DRAWLINE
+
+	FOR printing_chara, (printing_page - 1)*MAX_LINE, MAX_LINE + (printing_page - 1)*MAX_LINE
+		IF printing_chara >= chara_has_child_num
+			PRINTL
+			CONTINUE
+		ENDIF
+		PRINTFORM [{list_chara_has_child:printing_chara, 3}] %CALLNAME:(list_chara_has_child:printing_chara), 16, LEFT%
+		CALL SHOW_CHILDDATA(list_chara_has_child:printing_chara, "ICON")
+	NEXT
+DRAWLINE
+	PRINTFORML [{PREV_PAGE}] 前のページ
+	PRINTFORML [{NEXT_PAGE}] 次のページ
+	PRINTL [  0] 戻る
+
+	WHILE 1
+		INPUT
+		;ページが1枚しかない場合はページ移動を要求されてもなにも処理しない
+		;子供が居ないとこの関数は呼ばれないのでchara_has_child_numは常に正であることに注意すると
+		;(chara_has_child_num - 1) / MAX_LINE + 1 は最後のページを表す
+		IF (chara_has_child_num - 1) / MAX_LINE + 1 == 1 && (RESULT == NEXT_PAGE || RESULT == PREV_PAGE)
+			CLEARLINE 1
+		CONTINUE
+		ENDIF
+		BREAK
+	WEND
+
+	SELECTCASE RESULT
+		CASE 0
+			;クリアするべき？
+			;CLEARLINE LINECOUNT - leave_line_count_last
+			RETURN 0
+		;ページ移動は循環するようにする 例えば1ページ目で前のページを要求されたら最後のページを表示する
+		CASE PREV_PAGE
+			SELECTCASE printing_page
+				CASE 1
+					printing_page = (chara_has_child_num - 1) / MAX_LINE + 1
+				CASEELSE
+					printing_page --
+			ENDSELECT
+		CASE NEXT_PAGE
+			SELECTCASE printing_page
+				CASE (chara_has_child_num - 1) / MAX_LINE + 1
+					printing_page = 1
+				CASEELSE
+					printing_page ++
+			ENDSELECT
+		CASEELSE
+			SIF INRANGE(RESULT, 1, CHARANUM) && CFLAG:RESULT:아이인원수
+				CALL SHOW_ALLCHILDLIST_CHARA(RESULT)
+	ENDSELECT
+WEND
+
+@SHOW_ALLCHILDLIST_CHARA(chara_id)
+#DIM chara_id
+#DIM leave_line_count_last
+leave_line_count_last = LINECOUNT
+
+	PRINTFORML %"━" * 50%
+	PRINTFORML 　%CALLNAME:chara_id%의 아이 일람
+	PRINTFORML %"━" * 50%
+CALL SHOW_CHILDDATA(chara_id)
+PRINTW
+CLEARLINE LINECOUNT - leave_line_count_last
+RETURN 0
 
 ;虫リストを参考に
 @SHOW_SP_DISH_LIST
@@ -467,7 +485,7 @@ IF !START
 ENDIF
 
 VARSET LOCAL
-PRINTFORML ◆고유요리 리스트 PAGE.{ページ}
+PRINTFORML ◆고유요리리스트 PAGE.{ページ}
 DRAWLINE
 FOR LOCAL, START, START:ページ
 	RESULT = 0

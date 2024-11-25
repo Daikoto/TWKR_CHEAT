@@ -105,7 +105,7 @@ CALL CHILD_DESCRIPTION
 CALL TIMEUP_NOTICE(FLAG:데이트상대)
 
 ;치트모드 적용
-CALL CHEAT_MODE_CHECK					
+CALL CHEAT_MODE_CHECK
 ;時計画像表示
 CALL INFO_CLOCK_IMAGE(TIME)
 
@@ -123,7 +123,7 @@ CALL INFO_TIME_WATCH
 SIF !날씨비표시
 	CALL INFO_SHOW_WEATHER
 
-;현재 기온 표시
+;現在の気温を表示
 CALL INFO_現在の気温
 
 PRINTPLAIN
@@ -922,11 +922,10 @@ FOR LOCAL, 1, CHARANUM
 			SIF (CFLAG:MASTER:전턴위치 != CFLAG:MASTER:현재위치 || CFLAG:LOCAL:전턴위치 != CFLAG:LOCAL:현재위치 || TRAINNAME:PREVCOM == "밀어넘어뜨린다")
 				CALL AFFAIR_DISCLOSURE(LOCAL, 1)
 		ENDIF
-		CFLAG:MASTER:당신앞턴위치 = CFLAG:MASTER:현재위치
 		CFLAG:LOCAL:동실 = 0
 	ENDIF
 NEXT
-CFLAG:MASTER:당신앞턴위치 = CFLAG:MASTER:현재위치
+												   
 
 ;친해져 강도 결정
 ;TARGET측
@@ -1064,12 +1063,11 @@ ENDIF
 
 ;일시와 축일의 표시(개행 없음)
 @INFO_TIME_WATCH
-;PRINTFORM %GET_MONTH()% {DAY:3}일째(%GET_DAY()%)
 PRINTFORM %GET_MONTH()% {DAY:3}일째(
 CALL COLOR_YOUBI
 PRINTFORM )
 SETCOLOR C_RED
-PRINTFORM %FESTIVAL()% 
+PRINTFORM %FESTIVAL()%
 RESETCOLOR
 PRINTFORM %시각표시(TIME)% 
 PRINTFORM (%CLASSICAL_TIME(TIME, 1, 2)%)
@@ -1228,16 +1226,16 @@ SELECTCASE WIND_VELOCITY
 		PRINT  강풍
 	CASE 2
 		PRINT 　
-		SETCOLOR C_気象_注意報
+		PRINTFORM %UNICODE(0x26A0)%
 		PRINTFORM %UNICODE(0x26A0)%
 		SETCOLOR C_気象_警報
-		PRINT 폭풍
+		PRINT  폭풍
 	CASE 3
 		PRINT 　
 		SETCOLOR C_気象_注意報
 		PRINTFORM %UNICODE(0x26A0)%
 		SETCOLOR C_気象_土砂災害警戒情報
-		PRINT 구풍
+		PRINT  구풍
 ENDSELECT
 RESETCOLOR
 
@@ -1259,47 +1257,47 @@ SELECTCASE 現在気温
 	CASE IS <= -50
 		PRINT 　
 		SETCOLOR C_気温_酷寒
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 0
 		PRINT 　
 		SETCOLOR C_気温_冬
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 50
 		PRINT 　
 		SETCOLOR C_気温_寒
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 100
 		PRINT 　
 		SETCOLOR C_気温_冷
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 150
 		PRINT 　
 		SETCOLOR C_気温_涼
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 200
 		PRINT 　
 		SETCOLOR C_気温_温
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 250
 		PRINT 　
 		SETCOLOR C_気温_暖
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 300
 		PRINT 　
 		SETCOLOR C_気温_夏
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS < 350
 		PRINT 　
 		SETCOLOR C_気温_真夏
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 	CASE IS >= 350
 		PRINT 　
 		SETCOLOR C_気温_猛暑
-		PRINTFORM 기온{現在気温/10}.{ABS(現在気温%10)}℃
+		PRINTFORM 기온 {現在気温/10}.{ABS(現在気温%10)}℃
 ENDSELECT
 RESETCOLOR
 
-;시간정지관련
+;時間停止関連
 ;TSPバーとコマンドの位置はどちらが良い？
 ;暫定に倣って停止解除の位置とX軸が近いのでコマンドを右側にしていますが、スペース（"　"）があるので左側にもできます。
 @INFO_TIMESTOP
@@ -1331,7 +1329,7 @@ PRINTL
 SIF TEQUIP:애태우기모드
 	PRINT 　[애태우기중]
 PRINTFORM 　[%HUNGER(MASTER)%]　
-PRINTBUTTON "[치트모드]", 900
+PRINTBUTTON "[치트모드]", 900								 
 RESETCOLOR
 IF NEMUKE() > 720
 	LOCALS = 수면가능
@@ -1555,12 +1553,23 @@ PRINTFORM (호감도:
 CALL PRINT_RANK(CFLAG:2, "MAX_50000")
 PRINTFORM  {CFLAG:2}, 신뢰도:
 CALL PRINT_RANK(CFLAG:신뢰도, "MAX_20000")
-PRINTFORM  {CFLAG:신뢰도}
+PRINTFORM  {CFLAG:신뢰도}   
 IF NOTICE_LUST(TARGET)
-	PRINTFORM , 욕구 불만도:{CFLAG:TARGET:욕구불만도/10}\%)
-ELSE
-	PRINT )
+	PRINTFORM , 욕구 불만도:{CFLAG:TARGET:욕구불만도/10}\%, 
 ENDIF
+PRINTFORM 아이 인원수:{CFLAG:TARGET:아이인원수}, 임신가능:　
+IF INRANGE(CFLAG:TARGET:출산경과일, 1, 59) || TALENT:TARGET:임신 ;1で種付け不可
+	PRINT ×)　
+ELSE
+	PRINT 〇)　
+ENDIF
+;IF NOTICE_LUST(TARGET)
+;	PRINTFORM ,　欲求不満度:{CFLAG:TARGET:溜まってる度 / 10}％)　
+;ELSE
+;	PRINT )　
+;ENDIF
+
+
 
 ;PRINTFORM [%HUNGER(TARGET)%]　
 DEBUGPRINTFORML  합의판정치:{CFLAG:합의판정}
@@ -1760,7 +1769,7 @@ CALL BASE_BAR(C_ID, NAME_BASE, 18, NAME_COLOR, "「종류 표기 없음」 「�
 SIF !HAS_PENIS(ARG)
 	RETURN
 CALL INFO_GAUGE_BAR(ARG, "사정", "물색")
-IF TCVAR:ARG:이기초
+IF TCVAR:ARG:갈것같음
 	SETCOLOR C_RED
 	PRINTFORM [!한계!]
 	RESETCOLOR
